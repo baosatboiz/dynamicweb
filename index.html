@@ -225,7 +225,7 @@
         <div id="gameScreen" class="game-screen hidden">
             <div class="game-header">
                 <div class="score">Điểm: <span id="score">0</span></div>
-                <div class="timer"><span id="timer">2:00</span></div>
+                <div class="timer">Thời gian: <span id="timer">0:00</span></div>
             </div>
 
             <div class="progress" id="progress">Câu 1/7</div>
@@ -250,7 +250,7 @@
                     <strong>Điểm số:</strong> <span id="finalPoints">0</span> điểm
                 </p>
                 <p style="font-size: 1.3em; margin: 15px 0;">
-                    <strong>Thời gian còn lại:</strong> <span id="finalTime">0</span> giây
+                    <strong>Thời gian hoàn thành:</strong> <span id="finalTime">0 giây</span>
                 </p>
                 <p style="font-size: 1.3em; margin: 15px 0;" id="message"></p>
             </div>
@@ -260,22 +260,21 @@
 
     <script>
         var questions = [
-            { question: "3 + 2 = ?", image: "🍎🍎🍎 + 🍎🍎", answers: ["4", "5", "6", "3"], correct: 1 },
-            { question: "5 - 2 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟", answers: ["2", "3", "4", "5"], correct: 1 },
-            { question: "2 + 4 = ?", image: "🐻🐻 + 🐻🐻🐻🐻", answers: ["5", "6", "7", "4"], correct: 1 },
-            { question: "6 - 3 = ?", image: "🎈🎈🎈🎈🎈🎈 - 🎈🎈🎈", answers: ["2", "3", "4", "5"], correct: 1 },
-            { question: "1 + 5 = ?", image: "🌺 + 🌺🌺🌺🌺🌺", answers: ["5", "6", "7", "4"], correct: 1 },
-            { question: "4 - 1 = ?", image: "🦋🦋🦋🦋 - 🦋", answers: ["2", "3", "4", "5"], correct: 1 },
+            { question: "3 + 2 = ?", image: "🍎🍎🍎 + 🍎🍎", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "5 - 2 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟", answers: ["2", "4", "3", "5"], correct: 2 },
+            { question: "2 + 4 = ?", image: "🐻🐻 + 🐻🐻🐻🐻", answers: ["5", "7", "6", "4"], correct: 2 },
+            { question: "6 - 3 = ?", image: "🎈🎈🎈🎈🎈🎈 - 🎈🎈🎈", answers: ["2", "4", "5", "3"], correct: 3 },
+            { question: "1 + 5 = ?", image: "🌺 + 🌺🌺🌺🌺🌺", answers: ["7", "5", "6", "4"], correct: 2 },
+            { question: "4 - 1 = ?", image: "🦋🦋🦋🦋 - 🦋", answers: ["2", "4", "3", "5"], correct: 2 },
             { question: "3 + 3 = ?", image: "🍓🍓🍓 + 🍓🍓🍓", answers: ["5", "6", "7", "4"], correct: 1 }
         ];
 
         var currentQuestion = 0;
         var score = 0;
-        var timeLeft = 120;
+        var timeLeft = 0;
         var timerInterval;
         var playerName = '';
         var audioContext;
-        var backgroundMusicInterval;
 
         function startGame() {
             playerName = document.getElementById('playerName').value.trim();
@@ -289,26 +288,21 @@
 
             currentQuestion = 0;
             score = 0;
-            timeLeft = 120;
+            timeLeft = 0;
             document.getElementById('score').textContent = '0';
 
             loadQuestion();
             startTimer();
             initAudio();
-            playBackgroundMusic();
         }
 
         function startTimer() {
             timerInterval = setInterval(function() {
-                timeLeft = timeLeft - 1;
+                timeLeft = timeLeft + 1;
                 var minutes = Math.floor(timeLeft / 60);
                 var seconds = timeLeft % 60;
                 var timeString = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
                 document.getElementById('timer').textContent = timeString;
-
-                if (timeLeft <= 0) {
-                    endGame();
-                }
             }, 1000);
         }
 
@@ -379,44 +373,6 @@
             }
         }
 
-        function playBackgroundMusic() {
-            if (!audioContext) return;
-            
-            var melody = [
-                {note: 523.25, duration: 0.3},
-                {note: 587.33, duration: 0.3},
-                {note: 659.25, duration: 0.3},
-                {note: 698.46, duration: 0.3},
-                {note: 783.99, duration: 0.3},
-                {note: 698.46, duration: 0.3},
-                {note: 659.25, duration: 0.3},
-                {note: 587.33, duration: 0.3}
-            ];
-            var noteIndex = 0;
-
-            backgroundMusicInterval = setInterval(function() {
-                try {
-                    var oscillator = audioContext.createOscillator();
-                    var gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    var currentNote = melody[noteIndex % melody.length];
-                    oscillator.frequency.value = currentNote.note;
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.08;
-                    
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + currentNote.duration);
-                    
-                    noteIndex = noteIndex + 1;
-                } catch (e) {
-                    console.log('Music error');
-                }
-            }, 400);
-        }
-
         function playCorrectSound() {
             if (!audioContext) return;
             
@@ -481,9 +437,6 @@
 
         function endGame() {
             clearInterval(timerInterval);
-            if (backgroundMusicInterval) {
-                clearInterval(backgroundMusicInterval);
-            }
 
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('finishScreen').classList.remove('hidden');
@@ -491,7 +444,7 @@
             document.getElementById('finalPlayerName').textContent = playerName;
             document.getElementById('finalScore').textContent = score + '/' + questions.length;
             document.getElementById('finalPoints').textContent = score * 10;
-            document.getElementById('finalTime').textContent = timeLeft;
+            document.getElementById('finalTime').textContent = timeLeft + ' giây';
 
             var message = '';
             var percentage = score / questions.length;
