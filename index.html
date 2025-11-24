@@ -275,6 +275,8 @@
         var timerInterval;
         var playerName = '';
         var audioContext;
+        var applauseSound;
+        var cheerSound;
 
         function startGame() {
             playerName = document.getElementById('playerName').value.trim();
@@ -293,7 +295,7 @@
 
             loadQuestion();
             startTimer();
-            initAudio();
+            loadSounds();
         }
 
         function startTimer() {
@@ -365,59 +367,29 @@
             }, 2000);
         }
 
-        function initAudio() {
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            } catch (e) {
-                console.log('Audio not supported');
-            }
+        function loadSounds() {
+            cheerSound = new Audio('cheer.mp3');
+            applauseSound.volume = 0.5;
+            cheerSound.volume = 0.5;
         }
 
         function playCorrectSound() {
-            if (!audioContext) return;
-            
             try {
-                var times = [0, 0.1, 0.2, 0.3];
-                for (var i = 0; i < times.length; i++) {
-                    (function(delay) {
-                        setTimeout(function() {
-                            var oscillator = audioContext.createOscillator();
-                            var gainNode = audioContext.createGain();
-                            
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioContext.destination);
-                            
-                            oscillator.frequency.value = 1000;
-                            oscillator.type = 'sine';
-                            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                            
-                            oscillator.start();
-                            oscillator.stop(audioContext.currentTime + 0.1);
-                        }, delay);
-                    })(times[i] * 1000);
+                if (Math.random() > 0.5 && applauseSound) {
+                    applauseSound.currentTime = 0;
+                    applauseSound.play();
+                } else if (cheerSound) {
+                    cheerSound.currentTime = 0;
+                    cheerSound.play();
                 }
-                
-                setTimeout(function() {
-                    var osc = audioContext.createOscillator();
-                    var gain = audioContext.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    osc.frequency.value = 1200;
-                    osc.type = 'sine';
-                    gain.gain.value = 0.3;
-                    osc.start();
-                    osc.stop(audioContext.currentTime + 0.4);
-                }, 400);
             } catch (e) {
                 console.log('Sound error');
             }
         }
 
         function playWrongSound() {
-            if (!audioContext) return;
-            
             try {
+                audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
                 var oscillator = audioContext.createOscillator();
                 var gainNode = audioContext.createGain();
                 
