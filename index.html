@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò Chơi Toán Học</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .intro-screen, .game-screen, .finish-screen {
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            font-size: 1.3em;
+            padding: 15px 20px;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            font-size: 1.3em;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 15px;
+        }
+
+        .timer {
+            font-size: 1.5em;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .score {
+            font-size: 1.5em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .question-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .question-image {
+            font-size: 3em;
+            margin: 20px 0;
+            transition: opacity 0.3s;
+        }
+
+        .image-hidden {
+            opacity: 0;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .answer-btn {
+            font-size: 1.8em;
+            padding: 25px;
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        .answer-btn.correct {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .answer-btn.wrong {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        .feedback {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: bounce 0.5s;
+        }
+
+        .feedback.correct {
+            color: #27ae60;
+        }
+
+        .feedback.wrong {
+            color: #e74c3c;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .leaderboard {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+        }
+
+        .leaderboard h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #27ae60;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .trophy {
+            font-size: 5em;
+            margin: 20px 0;
+        }
+
+        .progress {
+            color: #764ba2;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="introScreen" class="intro-screen">
+            <h1>Trò Chơi Toán Học</h1>
+            <p class="subtitle">Cộng và Trừ Trong Phạm Vi 6</p>
+            <div style="margin: 30px 0;">
+                <input type="text" id="playerName" placeholder="Nhập tên của bạn...">
+            </div>
+            <button onclick="startGame()">Bắt Đầu Chơi</button>
+        </div>
+
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="game-header">
+                <div class="score">Điểm: <span id="score">0</span></div>
+                <div class="timer"><span id="timer">2:00</span></div>
+            </div>
+
+            <div class="progress" id="progress">Câu 1/7</div>
+
+            <div class="question-container">
+                <div class="question-text" id="question"></div>
+                <div class="question-image" id="questionImage"></div>
+                <div id="feedback" class="feedback"></div>
+            </div>
+
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+
+        <div id="finishScreen" class="finish-screen hidden">
+            <div class="trophy">🏆</div>
+            <h1>Hoàn Thành!</h1>
+            <p class="subtitle">Chúc mừng <span id="finalPlayerName"></span>!</p>
+            <div class="final-score" id="finalScore">0/7</div>
+            <div class="leaderboard">
+                <h2>Kết Quả Của Bạn</h2>
+                <p style="font-size: 1.3em; margin: 15px 0;">
+                    <strong>Điểm số:</strong> <span id="finalPoints">0</span> điểm
+                </p>
+                <p style="font-size: 1.3em; margin: 15px 0;">
+                    <strong>Thời gian còn lại:</strong> <span id="finalTime">0</span> giây
+                </p>
+                <p style="font-size: 1.3em; margin: 15px 0;" id="message"></p>
+            </div>
+            <button onclick="restartGame()" style="margin-top: 30px;">Chơi Lại</button>
+        </div>
+    </div>
+
+    <script>
+        var questions = [
+            { question: "3 + 2 = ?", image: "🍎🍎🍎 + 🍎🍎", answers: ["4", "5", "6", "3"], correct: 1 },
+            { question: "5 - 2 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟", answers: ["2", "3", "4", "5"], correct: 1 },
+            { question: "2 + 4 = ?", image: "🐻🐻 + 🐻🐻🐻🐻", answers: ["5", "6", "7", "4"], correct: 1 },
+            { question: "6 - 3 = ?", image: "🎈🎈🎈🎈🎈🎈 - 🎈🎈🎈", answers: ["2", "3", "4", "5"], correct: 1 },
+            { question: "1 + 5 = ?", image: "🌺 + 🌺🌺🌺🌺🌺", answers: ["5", "6", "7", "4"], correct: 1 },
+            { question: "4 - 1 = ?", image: "🦋🦋🦋🦋 - 🦋", answers: ["2", "3", "4", "5"], correct: 1 },
+            { question: "3 + 3 = ?", image: "🍓🍓🍓 + 🍓🍓🍓", answers: ["5", "6", "7", "4"], correct: 1 }
+        ];
+
+        var currentQuestion = 0;
+        var score = 0;
+        var timeLeft = 120;
+        var timerInterval;
+        var playerName = '';
+        var audioContext;
+        var backgroundMusicInterval;
+
+        function startGame() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert('Vui lòng nhập tên của bạn!');
+                return;
+            }
+
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            currentQuestion = 0;
+            score = 0;
+            timeLeft = 120;
+            document.getElementById('score').textContent = '0';
+
+            loadQuestion();
+            startTimer();
+            initAudio();
+            playBackgroundMusic();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                timeLeft = timeLeft - 1;
+                var minutes = Math.floor(timeLeft / 60);
+                var seconds = timeLeft % 60;
+                var timeString = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+                document.getElementById('timer').textContent = timeString;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame();
+                return;
+            }
+
+            var q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('questionImage').textContent = q.image;
+            document.getElementById('questionImage').classList.remove('image-hidden');
+            document.getElementById('progress').textContent = 'Câu ' + (currentQuestion + 1) + '/' + questions.length;
+            document.getElementById('feedback').textContent = '';
+
+            var grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
+            
+            for (var i = 0; i < q.answers.length; i++) {
+                var btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = String.fromCharCode(65 + i) + '. ' + q.answers[i];
+                btn.setAttribute('data-index', i);
+                btn.onclick = function() {
+                    checkAnswer(parseInt(this.getAttribute('data-index')));
+                };
+                grid.appendChild(btn);
+            }
+        }
+
+        function checkAnswer(index) {
+            var q = questions[currentQuestion];
+            var buttons = document.querySelectorAll('.answer-btn');
+            var feedback = document.getElementById('feedback');
+
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+
+            if (index === q.correct) {
+                score = score + 1;
+                document.getElementById('score').textContent = score;
+                buttons[index].classList.add('correct');
+                feedback.textContent = 'Chính xác!';
+                feedback.className = 'feedback correct';
+                playCorrectSound();
+            } else {
+                buttons[index].classList.add('wrong');
+                buttons[q.correct].classList.add('correct');
+                feedback.textContent = 'Sai rồi!';
+                feedback.className = 'feedback wrong';
+                document.getElementById('questionImage').classList.add('image-hidden');
+                playWrongSound();
+            }
+
+            setTimeout(function() {
+                currentQuestion = currentQuestion + 1;
+                loadQuestion();
+            }, 2000);
+        }
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function playBackgroundMusic() {
+            if (!audioContext) return;
+            
+            var melody = [
+                {note: 523.25, duration: 0.3},
+                {note: 587.33, duration: 0.3},
+                {note: 659.25, duration: 0.3},
+                {note: 698.46, duration: 0.3},
+                {note: 783.99, duration: 0.3},
+                {note: 698.46, duration: 0.3},
+                {note: 659.25, duration: 0.3},
+                {note: 587.33, duration: 0.3}
+            ];
+            var noteIndex = 0;
+
+            backgroundMusicInterval = setInterval(function() {
+                try {
+                    var oscillator = audioContext.createOscillator();
+                    var gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    var currentNote = melody[noteIndex % melody.length];
+                    oscillator.frequency.value = currentNote.note;
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.08;
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + currentNote.duration);
+                    
+                    noteIndex = noteIndex + 1;
+                } catch (e) {
+                    console.log('Music error');
+                }
+            }, 400);
+        }
+
+        function playCorrectSound() {
+            if (!audioContext) return;
+            
+            try {
+                var times = [0, 0.1, 0.2, 0.3];
+                for (var i = 0; i < times.length; i++) {
+                    (function(delay) {
+                        setTimeout(function() {
+                            var oscillator = audioContext.createOscillator();
+                            var gainNode = audioContext.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            oscillator.frequency.value = 1000;
+                            oscillator.type = 'sine';
+                            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                            
+                            oscillator.start();
+                            oscillator.stop(audioContext.currentTime + 0.1);
+                        }, delay);
+                    })(times[i] * 1000);
+                }
+                
+                setTimeout(function() {
+                    var osc = audioContext.createOscillator();
+                    var gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = 1200;
+                    osc.type = 'sine';
+                    gain.gain.value = 0.3;
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.4);
+                }, 400);
+            } catch (e) {
+                console.log('Sound error');
+            }
+        }
+
+        function playWrongSound() {
+            if (!audioContext) return;
+            
+            try {
+                var oscillator = audioContext.createOscillator();
+                var gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 200;
+                oscillator.type = 'sawtooth';
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Sound error');
+            }
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            if (backgroundMusicInterval) {
+                clearInterval(backgroundMusicInterval);
+            }
+
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('finishScreen').classList.remove('hidden');
+
+            document.getElementById('finalPlayerName').textContent = playerName;
+            document.getElementById('finalScore').textContent = score + '/' + questions.length;
+            document.getElementById('finalPoints').textContent = score * 10;
+            document.getElementById('finalTime').textContent = timeLeft;
+
+            var message = '';
+            var percentage = score / questions.length;
+            if (score === questions.length) {
+                message = 'Xuất sắc! Bạn làm đúng tất cả!';
+            } else if (percentage >= 0.7) {
+                message = 'Giỏi lắm! Bạn làm rất tốt!';
+            } else if (percentage >= 0.5) {
+                message = 'Khá đấy! Cố gắng thêm nhé!';
+            } else {
+                message = 'Cố lên! Lần sau sẽ tốt hơn!';
+            }
+            document.getElementById('message').textContent = message;
+        }
+
+        function restartGame() {
+            document.getElementById('finishScreen').classList.add('hidden');
+            document.getElementById('introScreen').classList.remove('hidden');
+            document.getElementById('playerName').value = '';
+        }
+    </script>
+</body>
+</html>
