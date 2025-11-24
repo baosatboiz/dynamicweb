@@ -77,6 +77,12 @@
             transform: scale(1.05);
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .game-header {
             display: flex;
             justify-content: space-between;
@@ -180,6 +186,11 @@
             50% { transform: scale(1.2); }
         }
 
+        .next-btn {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
         .leaderboard {
             background: #f8f9fa;
             padding: 30px;
@@ -237,6 +248,8 @@
             </div>
 
             <div class="answers-grid" id="answersGrid"></div>
+            
+            <button id="nextBtn" class="next-btn hidden" onclick="nextQuestion()">Câu Tiếp Theo</button>
         </div>
 
         <div id="finishScreen" class="finish-screen hidden">
@@ -259,16 +272,93 @@
     </div>
 
     <script>
-        var questions = [
+        var allQuestions = [
+            // Phép cộng với 0
+            { question: "0 + 0 = ?", image: "➕", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "0 + 1 = ?", image: "🎈", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "0 + 2 = ?", image: "🎈🎈", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "0 + 3 = ?", image: "🌟🌟🌟", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "0 + 4 = ?", image: "🍎🍎🍎🍎", answers: ["4", "3", "5", "2"], correct: 0 },
+            { question: "0 + 5 = ?", image: "🌺🌺🌺🌺🌺", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "0 + 6 = ?", image: "🎁🎁🎁🎁🎁🎁", answers: ["6", "5", "4", "7"], correct: 0 },
+            
+            // Phép cộng với 1
+            { question: "1 + 0 = ?", image: "🐻", answers: ["1", "2", "0", "3"], correct: 0 },
+            { question: "1 + 1 = ?", image: "🐻 + 🐻", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "1 + 2 = ?", image: "🍓 + 🍓🍓", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "1 + 3 = ?", image: "🎯 + 🎯🎯🎯", answers: ["4", "3", "5", "2"], correct: 0 },
+            { question: "1 + 4 = ?", image: "🎁 + 🎁🎁🎁🎁", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "1 + 5 = ?", image: "🌺 + 🌺🌺🌺🌺🌺", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép cộng với 2
+            { question: "2 + 0 = ?", image: "🦋🦋", answers: ["2", "3", "1", "4"], correct: 0 },
+            { question: "2 + 1 = ?", image: "🎺🎺 + 🎺", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "2 + 2 = ?", image: "🌻🌻 + 🌻🌻", answers: ["4", "3", "5", "2"], correct: 0 },
+            { question: "2 + 3 = ?", image: "🎨🎨 + 🎨🎨🎨", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "2 + 4 = ?", image: "🐻🐻 + 🐻🐻🐻🐻", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép cộng với 3
+            { question: "3 + 0 = ?", image: "🎸🎸🎸", answers: ["3", "4", "2", "5"], correct: 0 },
+            { question: "3 + 1 = ?", image: "🎸🎸🎸 + 🎸", answers: ["4", "3", "5", "2"], correct: 0 },
             { question: "3 + 2 = ?", image: "🍎🍎🍎 + 🍎🍎", answers: ["5", "4", "6", "3"], correct: 0 },
-            { question: "5 - 2 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟", answers: ["2", "4", "3", "5"], correct: 2 },
-            { question: "2 + 4 = ?", image: "🐻🐻 + 🐻🐻🐻🐻", answers: ["5", "7", "6", "4"], correct: 2 },
-            { question: "6 - 3 = ?", image: "🎈🎈🎈🎈🎈🎈 - 🎈🎈🎈", answers: ["2", "4", "5", "3"], correct: 3 },
-            { question: "1 + 5 = ?", image: "🌺 + 🌺🌺🌺🌺🌺", answers: ["7", "5", "6", "4"], correct: 2 },
-            { question: "4 - 1 = ?", image: "🦋🦋🦋🦋 - 🦋", answers: ["2", "4", "3", "5"], correct: 2 },
-            { question: "3 + 3 = ?", image: "🍓🍓🍓 + 🍓🍓🍓", answers: ["5", "6", "7", "4"], correct: 1 }
+            { question: "3 + 3 = ?", image: "🍓🍓🍓 + 🍓🍓🍓", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép cộng với 4
+            { question: "4 + 0 = ?", image: "🌈🌈🌈🌈", answers: ["4", "5", "3", "6"], correct: 0 },
+            { question: "4 + 1 = ?", image: "🎪🎪🎪🎪 + 🎪", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "4 + 2 = ?", image: "🌈🌈🌈🌈 + 🌈🌈", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép cộng với 5
+            { question: "5 + 0 = ?", image: "🍊🍊🍊🍊🍊", answers: ["5", "6", "4", "7"], correct: 0 },
+            { question: "5 + 1 = ?", image: "🎭🎭🎭🎭🎭 + 🎭", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép cộng với 6
+            { question: "6 + 0 = ?", image: "🍉🍉🍉🍉🍉🍉", answers: ["6", "7", "5", "8"], correct: 0 },
+            
+            // Phép trừ với 0
+            { question: "0 - 0 = ?", image: "➖", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "1 - 0 = ?", image: "🎈", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "2 - 0 = ?", image: "🌟🌟", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "3 - 0 = ?", image: "🍎🍎🍎", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "4 - 0 = ?", image: "🐻🐻🐻🐻", answers: ["4", "3", "5", "2"], correct: 0 },
+            { question: "5 - 0 = ?", image: "🌺🌺🌺🌺🌺", answers: ["5", "4", "6", "3"], correct: 0 },
+            { question: "6 - 0 = ?", image: "🎁🎁🎁🎁🎁🎁", answers: ["6", "5", "7", "4"], correct: 0 },
+            
+            // Phép trừ với 1
+            { question: "1 - 1 = ?", image: "🎈 - 🎈", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "2 - 1 = ?", image: "🌟🌟 - 🌟", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "3 - 1 = ?", image: "🍎🍎🍎 - 🍎", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "4 - 1 = ?", image: "🦋🦋🦋🦋 - 🦋", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "5 - 1 = ?", image: "🎪🎪🎪🎪🎪 - 🎪", answers: ["4", "3", "5", "2"], correct: 0 },
+            { question: "6 - 1 = ?", image: "🍉🍉🍉🍉🍉🍉 - 🍉", answers: ["5", "4", "6", "3"], correct: 0 },
+            
+            // Phép trừ với 2
+            { question: "2 - 2 = ?", image: "🌟🌟 - 🌟🌟", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "3 - 2 = ?", image: "🍓🍓🍓 - 🍓🍓", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "4 - 2 = ?", image: "🎭🎭🎭🎭 - 🎭🎭", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "5 - 2 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟", answers: ["3", "2", "4", "1"], correct: 0 },
+            { question: "6 - 2 = ?", image: "🌸🌸🌸🌸🌸🌸 - 🌸🌸", answers: ["4", "3", "5", "2"], correct: 0 },
+            
+            // Phép trừ với 3
+            { question: "3 - 3 = ?", image: "🍎🍎🍎 - 🍎🍎🍎", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "4 - 3 = ?", image: "🎨🎨🎨🎨 - 🎨🎨🎨", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "5 - 3 = ?", image: "🍊🍊🍊🍊🍊 - 🍊🍊🍊", answers: ["2", "1", "3", "0"], correct: 0 },
+            { question: "6 - 3 = ?", image: "🎈🎈🎈🎈🎈🎈 - 🎈🎈🎈", answers: ["3", "2", "4", "1"], correct: 0 },
+            
+            // Phép trừ với 4
+            { question: "4 - 4 = ?", image: "🐻🐻🐻🐻 - 🐻🐻🐻🐻", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "5 - 4 = ?", image: "🌺🌺🌺🌺🌺 - 🌺🌺🌺🌺", answers: ["1", "0", "2", "3"], correct: 0 },
+            { question: "6 - 4 = ?", image: "🍇🍇🍇🍇🍇🍇 - 🍇🍇🍇🍇", answers: ["2", "1", "3", "0"], correct: 0 },
+            
+            // Phép trừ với 5
+            { question: "5 - 5 = ?", image: "🌟🌟🌟🌟🌟 - 🌟🌟🌟🌟🌟", answers: ["0", "1", "2", "3"], correct: 0 },
+            { question: "6 - 5 = ?", image: "🎁🎁🎁🎁🎁🎁 - 🎁🎁🎁🎁🎁", answers: ["1", "0", "2", "3"], correct: 0 },
+            
+            // Phép trừ với 6
+            { question: "6 - 6 = ?", image: "🍉🍉🍉🍉🍉🍉 - 🍉🍉🍉🍉🍉🍉", answers: ["0", "1", "2", "3"], correct: 0 }
         ];
 
+        var questions = [];
         var currentQuestion = 0;
         var score = 0;
         var timeLeft = 0;
@@ -277,6 +367,18 @@
         var audioContext;
         var applauseSound;
         var cheerSound;
+        var answered = false;
+
+        function shuffleArray(array) {
+            var newArray = array.slice();
+            for (var i = newArray.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = newArray[i];
+                newArray[i] = newArray[j];
+                newArray[j] = temp;
+            }
+            return newArray;
+        }
 
         function startGame() {
             playerName = document.getElementById('playerName').value.trim();
@@ -288,9 +390,11 @@
             document.getElementById('introScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
 
+            questions = shuffleArray(allQuestions).slice(0, 7);
             currentQuestion = 0;
             score = 0;
             timeLeft = 0;
+            answered = false;
             document.getElementById('score').textContent = '0';
 
             loadQuestion();
@@ -314,12 +418,14 @@
                 return;
             }
 
+            answered = false;
             var q = questions[currentQuestion];
             document.getElementById('question').textContent = q.question;
             document.getElementById('questionImage').textContent = q.image;
             document.getElementById('questionImage').classList.remove('image-hidden');
             document.getElementById('progress').textContent = 'Câu ' + (currentQuestion + 1) + '/' + questions.length;
             document.getElementById('feedback').textContent = '';
+            document.getElementById('nextBtn').classList.add('hidden');
 
             var grid = document.getElementById('answersGrid');
             grid.innerHTML = '';
@@ -337,6 +443,9 @@
         }
 
         function checkAnswer(index) {
+            if (answered) return;
+            answered = true;
+
             var q = questions[currentQuestion];
             var buttons = document.querySelectorAll('.answer-btn');
             var feedback = document.getElementById('feedback');
@@ -349,28 +458,31 @@
                 score = score + 1;
                 document.getElementById('score').textContent = score;
                 buttons[index].classList.add('correct');
-                feedback.textContent = 'Chính xác!';
+                feedback.textContent = 'Chính xác! 🎉';
                 feedback.className = 'feedback correct';
                 playCorrectSound();
             } else {
                 buttons[index].classList.add('wrong');
                 buttons[q.correct].classList.add('correct');
-                feedback.textContent = 'Sai rồi!';
+                feedback.textContent = 'Sai rồi! Đáp án đúng là ' + q.answers[q.correct];
                 feedback.className = 'feedback wrong';
                 document.getElementById('questionImage').classList.add('image-hidden');
                 playWrongSound();
             }
 
-            setTimeout(function() {
-                currentQuestion = currentQuestion + 1;
-                loadQuestion();
-            }, 2000);
+            document.getElementById('nextBtn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestion = currentQuestion + 1;
+            loadQuestion();
         }
 
         function loadSounds() {
             cheerSound = new Audio('cheer.mp3');
-            applauseSound.volume = 0.5;
             cheerSound.volume = 0.5;
+            failSound = new Audio('fail.mp3');
+            failSound.volume=0.5;
         }
 
         function playCorrectSound() {
@@ -385,23 +497,13 @@
             } catch (e) {
                 console.log('Sound error');
             }
+            
         }
 
         function playWrongSound() {
             try {
-                audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-                var oscillator = audioContext.createOscillator();
-                var gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 200;
-                oscillator.type = 'sawtooth';
-                gainNode.gain.value = 0.3;
-                
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.5);
+               failSoundcurrentTime = 0;
+                failSound.play();
             } catch (e) {
                 console.log('Sound error');
             }
@@ -421,13 +523,13 @@
             var message = '';
             var percentage = score / questions.length;
             if (score === questions.length) {
-                message = 'Xuất sắc! Bạn làm đúng tất cả!';
+                message = 'Xuất sắc! Bạn làm đúng tất cả! 🌟';
             } else if (percentage >= 0.7) {
-                message = 'Giỏi lắm! Bạn làm rất tốt!';
+                message = 'Giỏi lắm! Bạn làm rất tốt! 👏';
             } else if (percentage >= 0.5) {
-                message = 'Khá đấy! Cố gắng thêm nhé!';
+                message = 'Khá đấy! Cố gắng thêm nhé! 💪';
             } else {
-                message = 'Cố lên! Lần sau sẽ tốt hơn!';
+                message = 'Cố lên! Lần sau sẽ tốt hơn! 🌈';
             }
             document.getElementById('message').textContent = message;
         }
